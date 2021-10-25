@@ -37,7 +37,7 @@ def time_to_speed_factor(times):
 
 def insert_measure(d, k, v):
     _,_,_,_,m = decode_identifier(k)
-    d[m] = normalize(invert(v))
+    d[m.replace("Time (ms)","")] = normalize(invert(v))
 
 def insert_tl(d, k, v):
     _,tl,_,_,_ = decode_identifier(k)
@@ -105,7 +105,16 @@ dpus = 64
 
 fg, ax = plt.subplots(count_dpus(data["BS"]), count_tasklets(data["BS"]))
 
-plot_grid(ax, data["SEL"])
+plot_grid(ax, data["BS"])
 
 plt.ylim(0, 1.1)
-plt.show()
+
+print(f"setting size to {count_dpus(data['BS'])}:{count_tasklets(data['BS'])}")
+
+lines, labels = ax[0, 0].get_legend_handles_labels()
+plt.legend(lines, labels, loc = 'lower center')
+plt.gcf().set_size_inches(count_dpus(data["BS"]) * 10, count_tasklets(data["BS"]) * 2)
+plt.gcf().set_dpi(300)
+
+plt.savefig("plot.png")
+

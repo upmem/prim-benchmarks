@@ -1,0 +1,5 @@
+**/profile/**
+**/bin/**
+aggregate.json
+expand.json
+plot*.png
