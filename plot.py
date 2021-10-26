@@ -40,13 +40,15 @@ def insert_measure(d, k, v):
     d[m.replace("Time (ms)","")] = normalize(invert(v))
 
 def insert_tl(d, k, v):
-    _,tl,_,_,_ = decode_identifier(k)
+    _,t_s,_,_,_ = decode_identifier(k)
+    tl = int(t_s)
     if not tl in d :
         d[tl] = dict()
     insert_measure(d[tl], k, v)
 
 def insert_dpus(d, k, v):
-    _,_,_,dpus,_ = decode_identifier(k)
+    _,_,_,d_s,_ = decode_identifier(k)
+    dpus = int(d_s)
     if not dpus in d :
         d[dpus] = dict()
     insert_tl(d[dpus], k ,v)
@@ -70,7 +72,7 @@ def count_tasklets(dpus):
     m = 0
     for d in dpus : 
         n_keys = len(dpus[d].keys())
-        if(n_keys) > m :
+        if n_keys  > m :
             m = n_keys
     return m
 
@@ -83,13 +85,34 @@ def plot_group(ax, group):
         plot_measure(ax, group[k], k)
 
 def plot_grid(axes, dpus):
+    max_j = 0
     i = 0
-    for d in dpus : 
+    for d in sorted(dpus.keys()) : 
         j = 0
-        for t in dpus[d]:
+        for t in sorted(dpus[d].keys()):
             plot_group(axes[i, j], dpus[d][t])
+            axes[i, j].title.set_text(f"{d} dpus {t} tasklets")
+            if j == 0 :
+                axes[i, j].set_ylabel("performance (normalized)")
             j +=1
+        if max_j < j:
+            max_j = j
         i+=1
+    for j in range(0, max_j): 
+        axes[len(dpus.keys()) -1, j].set_xlabel("measure n°")
+        
+
+def plot_bench(bench):
+    fig = plt.figure(figsize=(count_tasklets(data[bench]) * 5, count_dpus(data[bench])* 4))
+    fig.suptitle(f"Benchmark : {bench}", fontsize=20)
+    ax = fig.subplots(count_dpus(data[bench]), count_tasklets(data[bench]), sharex=True, sharey=True)
+    plot_grid(ax, data[bench])
+    #plt.ylim(0, 1.1)
+    print(f"setting size to {count_dpus(data[bench])}:{count_tasklets(data[bench])}")
+    lines, labels = ax[0, 0].get_legend_handles_labels()
+    plt.legend(lines, labels, loc = 'center left', bbox_to_anchor=(1, 0.5))
+    plt.gcf().set_dpi(300)
+    plt.savefig(f"plot_{bench}.png")
 
 with open("aggregate.json", "r") as f : 
     data = json.loads(f.read())
@@ -99,22 +122,6 @@ data = expand_data(data)
 with open("expand.json", "w") as f :
     f.write(json.dumps(data, sort_keys=True, indent=2))
 
-bench = "bench"
-tl = 1
-dpus = 64
-
-fg, ax = plt.subplots(count_dpus(data["BS"]), count_tasklets(data["BS"]))
-
-plot_grid(ax, data["BS"])
-
-plt.ylim(0, 1.1)
-
-print(f"setting size to {count_dpus(data['BS'])}:{count_tasklets(data['BS'])}")
-
-lines, labels = ax[0, 0].get_legend_handles_labels()
-plt.legend(lines, labels, loc = 'lower center')
-plt.gcf().set_size_inches(count_dpus(data["BS"]) * 10, count_tasklets(data["BS"]) * 2)
-plt.gcf().set_dpi(300)
-
-plt.savefig("plot.png")
-
+for bench in data : 
+    print(f"plotting {bench}")
+    plot_bench(bench)
