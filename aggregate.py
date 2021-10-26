@@ -93,7 +93,7 @@ def to_json(data):
     return json.dumps(data, sort_keys=True, indent=2)
 
 
-benchs = ["BS", "BFS", "GEMV", "HST-L", "HST-S", "MLP", "NW", "RED", "SCAN-RSS", "SCAN-SSA", "SpMV", "TRNS", "TS", "UNI", "VA"]
+benchs = ["BS", "BFS", "GEMV", "HST-L", "HST-S", "MLP", "NW", "RED", "SCAN-RSS", "SCAN-SSA", "SEL","SpMV", "TRNS", "TS", "UNI", "VA"]
 
 data = parse_benchs(benchs)
 
