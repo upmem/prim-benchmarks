@@ -29,6 +29,9 @@ def parse_benchs(benchs):
 
 def parse_profile(profile_dir, bench):
     res = dict()
+    if not os.path.isdir(profile_dir) : 
+        print(f"{profile_dir} not existing, skipping")
+        return res
     for outf in os.scandir(profile_dir):
         print(f"\tparsing {outf}")
         dict_union(res, parse_out(outf, bench))
