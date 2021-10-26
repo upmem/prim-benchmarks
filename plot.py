@@ -1,6 +1,16 @@
 import json
 import matplotlib.pyplot as plt
 
+
+"""This script takes in a file (aggregate.json) produced by aggregate.py script and
+plots evolution of performances in a png image named plot_BENCHMARK.png for each benchmark.
+
+plot is made with normalized performance : 
+for a data serie, every value of the serie is represented as in proportion (0 to 1) 
+of the max value of the serie. This is useful to track down performance variations, 
+while allowing simple and generalized scale.
+"""
+
 def format_identifier(bench, tl, bl, dpus, measure):
     return f"{bench}:{tl}:{bl}:{dpus}:{measure}"
 
@@ -21,19 +31,6 @@ def normalize(times):
         n.append(t/m)
     return n
 
-def time_to_speed_factor(times):
-    factors = list()
-    factors.append(0)
-    i = 1
-    while(i < len(times)):
-        speed_old = 1/times[i-1]
-        speed_new = 1/times[i]
-        factor = speed_new / speed_old
-    #    if factor < 1 : 
-    #        factor = - 1 / factor
-        factors.append(factor)
-        i+=1
-    return factors
 
 def insert_measure(d, k, v):
     _,_,_,_,m = decode_identifier(k)

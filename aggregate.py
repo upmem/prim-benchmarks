@@ -1,6 +1,19 @@
 import os
 import json
 
+"""This script aggregates all profiles into one large data set, aggregate.json. Data are presented as : 
+"BENCH:TL:BL:DPUS:MEASURE"->[values]
+
+BENCH : name of the bench, example : BFS
+TL : number of tasklets
+BL : bl parameter of the bench
+DPUS : number of dpus
+MEASURE : name of the measure, for example "CPU time (ms)"
+
+each value in the list represents one parsing of profile files, in order of aggregate.py invocation.
+Note that if there are more than one line in profile files, only the last one is taken in account.
+"""
+
 def parse_benchs(benchs):
     res = dict()
     for d in benchs : 
@@ -72,7 +85,7 @@ def to_json(data):
     return json.dumps(data, sort_keys=True, indent=2)
 
 
-benchs = ["BS", "BFS", "SEL"]
+benchs = ["BS", "BFS", "GEMV", "HST-L", "HST-S", "MLP", "NW", "RED", "SCAN-RSS", "SCAN-SSA", "SpMV", "TRNS", "TS", "UNI", "VA"]
 
 data = parse_benchs(benchs)
 
