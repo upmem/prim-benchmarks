@@ -14,11 +14,16 @@ each value in the list represents one parsing of profile files, in order of aggr
 Note that if there are more than one line in profile files, only the last one is taken in account.
 """
 
+def dict_union(target, source):
+    for s in source:
+        if not s in target:
+            target[s]=source[s]
+
 def parse_benchs(benchs):
     res = dict()
     for d in benchs : 
         print(f"PARSING {d}")
-        res |= parse_profile(os.path.join(d, "profile"), d)
+        dict_union(res,parse_profile(os.path.join(d, "profile"), d))
     return res
 
 
@@ -26,7 +31,7 @@ def parse_profile(profile_dir, bench):
     res = dict()
     for outf in os.scandir(profile_dir):
         print(f"\tparsing {outf}")
-        res |= parse_out(outf, bench) 
+        dict_union(res, parse_out(outf, bench))
     return res
 
 def format_identifier(bench, tl, bl, dpus, measure):
