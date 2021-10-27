@@ -19,19 +19,19 @@ def dict_union(target, source):
         if not s in target:
             target[s]=source[s]
 
-def parse_benchs(benchs):
+def parse_benchs(source):
     res = dict()
-    for d in benchs : 
-        print(f"PARSING {d}")
-        dict_union(res,parse_profile(os.path.join(d, "profile"), d))
+    for d in os.scandir(source):
+        if os.path.isdir(d):
+            dict_union(res,parse_profile(os.path.join(d, "profile"), d.name))
     return res
-
 
 def parse_profile(profile_dir, bench):
     res = dict()
     if not os.path.isdir(profile_dir) : 
         print(f"{profile_dir} not existing, skipping")
         return res
+    print(f"PARSING {profile_dir}")
     for outf in os.scandir(profile_dir):
         print(f"\tparsing {outf}")
         dict_union(res, parse_out(outf, bench))
@@ -62,7 +62,6 @@ def parse_out(out_file, bench):
             ss = s.split(": ") 
             if len(ss) == 2:
                 res[format_identifier(bench, tl, bl, dpus, ss[0])] = [float(ss[1])]
-    print(res)
     return res
 
 def merge(first, last):    
@@ -92,14 +91,16 @@ def from_json(js):
 def to_json(data):
     return json.dumps(data, sort_keys=True, indent=2)
 
+source = "."
+infile = "aggregate.json"
+outfile = "aggregate.json"
 
-benchs = ["BS", "BFS", "GEMV", "HST-L", "HST-S", "MLP", "NW", "RED", "SCAN-RSS", "SCAN-SSA", "SEL","SpMV", "TRNS", "TS", "UNI", "VA"]
 
-data = parse_benchs(benchs)
+data = parse_benchs(source)
 
 old = None
-if(os.path.isfile("aggregate.json")):
-    with open("aggregate.json") as f :
+if(os.path.isfile(infile)):
+    with open(infile) as f :
         old = from_json(f.read())
 
 if old != None : 
@@ -107,5 +108,5 @@ if old != None :
 
 js = to_json(data)
 
-with open("aggregate.json", "w") as f :
+with open(outfile, "w") as f :
     f.write(js)

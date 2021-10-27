@@ -3,3 +3,4 @@
 aggregate.json
 expand.json
 plot*.png
+sample/**

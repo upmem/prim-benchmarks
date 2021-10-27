@@ -1,6 +1,6 @@
 import json
 import matplotlib.pyplot as plt
-
+import math
 
 """This script takes in a file (aggregate.json) produced by aggregate.py script and
 plots evolution of performances in a png image named plot_BENCHMARK.png for each benchmark.
@@ -21,7 +21,7 @@ def decode_identifier(identifier):
 def invert(times):
     n = list()
     for t in times :
-        n.append(1/t)
+        n.append(1/t if not math.isnan(t) else 0)
     return n
 
 def normalize(times):
@@ -30,7 +30,6 @@ def normalize(times):
     for t in times : 
         n.append(t/m)
     return n
-
 
 def insert_measure(d, k, v):
     _,_,_,_,m = decode_identifier(k)
@@ -110,6 +109,10 @@ def plot_bench(bench):
     plt.legend(lines, labels, loc = 'center left', bbox_to_anchor=(1, 0.5))
     plt.gcf().set_dpi(300)
     plt.savefig(f"plot_{bench}.png")
+
+def check_perf(measure):
+    pass
+
 
 with open("aggregate.json", "r") as f : 
     data = json.loads(f.read())
