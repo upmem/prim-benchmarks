@@ -166,3 +166,18 @@ If you find any bugs or have further questions or requests, please post an issue
 ## Acknowledgments 
 
 We thank UPMEM’s Fabrice Devaux, Rémy Cimadomo, Romaric Jodin, and Vincent Palatin for their valuable support. We acknowledge the support of SAFARI Research Group’s industrial partners, especially ASML, Facebook, Google, Huawei, Intel, Microsoft, VMware, and the Semiconductor Research Corporation. Izzat El Hajj acknowledges the support of the University Research Board of the American University of Beirut (URB-AUB-103951-25960). 
+
+
+## Additional notes on perf tracking
+
+UPMEM has added few script on this repo, `aggregate.py`, `plot.py` and `cleanup.py`. 
+To track performance evolution over several simulations, one shall do : 
+
+- run one or more benchmarks once using `run_weak.py`, as `python3 run_weak.py All` or `python3 run_weak.py SEL && python3 run_weak.py TS`. 
+- run `python3 aggregate.py`. This will parse `profile` directories of each ran bench and create a record file, `aggregate.json`. In case `aggregate.json` already exists, data will be appended.
+- run `python3 plot.py`. It will parse `aggregate.json` and create performance reports, as well as perform performance checks.
+- Repeat those steps any number of times.
+
+Performance reports are under the form of png images, one per benchmark, as `plot_BENCHMARKNAME.png`. Those show normalized (regarding the max of a data serie) performance evolution through each measure.
+
+Performance checks are performed on each data series, and produce a report listing all series not passing check under `checked.json` file. Those checks are meant to be tailored by editing `plot.py`. Please look at `check_perfs` function docstring to see how to proceed.
