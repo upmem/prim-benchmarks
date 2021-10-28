@@ -64,6 +64,12 @@ def insert_bench(d, k, v):
     insert_dpus(d[bench], k, v)
 
 def expand_data(data):
+    """
+    Transforms "flat" data from aggregate.json into nested data, getting schema from
+    {"bench:tl:bl:dpus:measure" -> list} 
+    to 
+    {"bench":{dpus : {tasklets : measure}}}
+    """
     res = dict()
     for k in data :
         insert_bench(res, k, data[k])
@@ -107,6 +113,10 @@ def plot_grid(axes, dpus):
         
 
 def plot_bench(bench):
+    """Plots a benchmark in the form of a grid of subplots. 
+    The grid is 2D indexed on dpus and tasklets, and 
+    in-subplot graphs represents data serie for each corresponding measure
+    """
     fig = plt.figure(figsize=(count_tasklets(data[bench]) * 5, count_dpus(data[bench])* 4))
     fig.suptitle(f"Benchmark : {bench}", fontsize=20)
     ax = fig.subplots(count_dpus(data[bench]), count_tasklets(data[bench]), sharex=True, sharey=True)
@@ -119,9 +129,11 @@ def plot_bench(bench):
     plt.savefig(f"plot_{bench}.png")
 
 
-Any = "ANY_VALUE_BRO"
+Any = "ANY_VALUE_BRO" #Special value, BRO is here to be sure nobody will ever use that key as a benchmark name
 
 def get_checker(key, other_keys, checkers, default):
+    """determine, with recursive approach, which checker to choose matching a set of keys, 
+    from a nested dict of checker functions, taking in account 'Any' selector"""
     print(f"getting checker with {key}, {other_keys}")
     k = None
     if key in checkers : 
@@ -187,18 +199,22 @@ res = check_perfs(data, checkers, decreased_15)
                         fail[format_identifier(b, t, 10, d, m)] = details
     return fail
 
+# MAIN ACTUALLY STARTS HERE
+
+# loading and formatting data
 
 with open("aggregate.json", "r") as f : 
     data = json.loads(f.read())
 
 data = expand_data(data)
 
-with open("expand.json", "w") as f :
-    f.write(json.dumps(data, sort_keys=True, indent=2))
+#plotting
 
 for bench in data : 
     print(f"plotting {bench}")
     plot_bench(bench)
+
+#checking
 
 def ignore(measures):
     return None
@@ -213,8 +229,7 @@ def decreased_15(measures):
             return f"perf decrease above threshold : {new/old*100}% (serie){measures}"
         else :
             return None
-#checking data :
-
+            
 checkers = { "SEL" : {Any : {Any: {"Inter-DPU": ignore}}}}
 
 res = check_perfs(data, checkers, decreased_15)

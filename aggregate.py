@@ -31,7 +31,7 @@ def parse_benchs(source):
     res = dict()
     for d in os.scandir(source):
         if os.path.isdir(d):
-            dict_union(res,parse_profile(os.path.join(d, "profile"), d.name))
+            dict_union(res, parse_profile(os.path.join(d, "profile"), d.name))
     return res
 
 def parse_profile(profile_dir, bench):
@@ -53,6 +53,7 @@ def decode_identifier(identifier):
     return s[0], s[1], s[2], s[3], s[4]
 
 def parse_out(out_file, bench):
+    """parsing output file from a benchmark run"""
     split_file = out_file.name.split("_")
     assert split_file[0] == "out"
     tl = int(split_file[1].replace("tl", ""))
@@ -72,7 +73,13 @@ def parse_out(out_file, bench):
                 res[format_identifier(bench, tl, bl, dpus, ss[0])] = [float(ss[1])]
     return res
 
-def merge(first, last):    
+def merge(first, last):  
+    """Used to merge previous results with new ones
+    first and last are dicts in the shape 
+    key -> list
+    if a key is present in both, lists are appended together,
+    otherwise, missing list is filled with NaN
+    """ 
     fm = 0
     for k in first :
         if len(first[k]) > fm :
