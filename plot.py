@@ -127,7 +127,47 @@ def get_checker(key, other_keys, checkers, default):
     else :
         return get_checker(other_keys[0], other_keys[1:], checkers[k], default)
 
+
 def check_perfs(benchs, checkers, default):
+""" Checks properties of data series and produces a report
+
+benchs is a set of benchmark data, nested dictionaries as : 
+{
+    BENCH_NAME(str) : { 
+        NR_DPUS(int) : {
+            NR_TASKLETS(int) : {
+                MEASURE_NAME(str) : [list of measures](list of floats)
+}}}}}
+
+checkers is a map matching topology of the benchs dicts, specifying a check function for dictionnary. 
+a check function shall take in a list of floats (the measures) and return either None (everything is fine) 
+or a json-serializable data type (something went wrong) to be displayed in the report.
+
+default is the default checker function to use when no match is found. 
+
+checkers should have either same keys as to be expected in benchs, or Any, to specify a default level
+
+For example, assuming we want to check whether the two last elements of any series show a perf decrease of 15%,
+except for Inter-DPU measure of SEL benchmark (regardless of DPU/Taslkets), we would do  :
+
+def ignore(measures):
+    return None
+
+def decreased_15(measures):
+    if len(measures) < 2 : 
+        return None
+    else : 
+        old = measures[-2]
+        new = measures[-1]
+        if new/old < 0.85 : 
+            return f"perf decrease above threshold : {new/old*100}% (serie){measures}"
+        else :
+            return None
+
+checkers = { "SEL" : {Any : {Any: {"Inter-DPU": ignore}}}}
+
+res = check_perfs(data, checkers, decreased_15)
+"""
     fail = dict()
     for b in benchs : 
         for d in benchs[b] : 
