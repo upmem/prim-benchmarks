@@ -33,7 +33,7 @@ def normalize(times):
 
 def insert_measure(d, k, v):
     _,_,_,_,m = decode_identifier(k)
-    d[m.replace("Time (ms)","")] = normalize(invert(v))
+    d[m.replace(" Time (ms)","")] = normalize(invert(v))
 
 def insert_tl(d, k, v):
     _,t_s,_,_,_ = decode_identifier(k)
@@ -110,8 +110,34 @@ def plot_bench(bench):
     plt.gcf().set_dpi(300)
     plt.savefig(f"plot_{bench}.png")
 
-def check_perf(measure):
-    pass
+
+Any = "ANY_VALUE_BRO"
+
+def get_checker(key, other_keys, checkers, default):
+    print(f"getting checker with {key}, {other_keys}")
+    k = None
+    if key in checkers : 
+        k = key   
+    elif Any in checkers : 
+        k = Any 
+    else : 
+        return default
+    if len(other_keys) == 0:
+        return checkers[key]
+    else :
+        return get_checker(other_keys[0], other_keys[1:], checkers[k], default)
+
+def check_perfs(benchs, checkers, default):
+    fail = dict()
+    for b in benchs : 
+        for d in benchs[b] : 
+            for t in benchs[b][d]:
+                for m in benchs[b][d][t]:
+                    checker = get_checker(b, [d,t,m], checkers, default)
+                    details = checker(benchs[b][d][t][m])
+                    if details != None :  
+                        fail[format_identifier(b, t, 10, d, m)] = details
+    return fail
 
 
 with open("aggregate.json", "r") as f : 
@@ -125,3 +151,25 @@ with open("expand.json", "w") as f :
 for bench in data : 
     print(f"plotting {bench}")
     plot_bench(bench)
+
+def ignore(measures):
+    return None
+
+def decreased_15(measures):
+    if len(measures) < 2 : 
+        return None
+    else : 
+        old = measures[-2]
+        new = measures[-1]
+        if new/old < 0.85 : 
+            return f"perf decrease above threshold : {new/old*100}% (serie){measures}"
+        else :
+            return None
+#checking data :
+
+checkers = { "SEL" : {Any : {Any: {"Inter-DPU": ignore}}}}
+
+res = check_perfs(data, checkers, decreased_15)
+
+with open("checked.json", "w") as f :
+    f.write(json.dumps(res, sort_keys=True, indent=2))

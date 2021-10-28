@@ -4,3 +4,4 @@ aggregate.json
 expand.json
 plot*.png
 sample/**
+checked.json
